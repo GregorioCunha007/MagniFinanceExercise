@@ -1,0 +1,61 @@
+﻿@model IEnumerable<MagniFinanceExercise.Models.Course>
+
+@section Scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-route.min.js"></script>
+    <script src="~/Scripts/custom/college.js"></script>
+}
+
+<h2>Courses</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Name)
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+            </td>
+        </tr>
+    }
+
+</table>
+
+<div ng-controller="CourseController">
+    <table>
+        <thead>
+            <h4>Statistics</h4>
+        </thead>
+        <tbody>
+            <tr>
+                <th> Course </th>
+                <th class="padding"> #Teachers </th>
+                <th class="padding"> #Subjects </th>
+                <th class="padding"> #Average </th>
+            </tr>
+            <tr ng-repeat="statistic in statistics">
+                <td>{{statistic.Name}}</td>
+                <td class="text-center">{{statistic.TeachersCount}}</td>
+                <td class="text-center">{{statistic.SubjectsCount}}</td>
+                <td class="text-center">{{statistic.Average | number:2 }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+

@@ -1,0 +1,129 @@
+﻿@model IEnumerable<MagniFinanceExercise.Models.Subject>
+
+@section Scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/angular.min.js"></script>
+    <script src="~/Scripts/angular-route.min.js"></script>
+    <script src="~/Scripts/custom/college.js"></script>
+}
+<style>
+
+    .insufficient {
+        background-color: red;
+    }
+
+    .suficient {
+        background-color: dimgray;
+    }
+
+    .suficient-plus {
+        background-color: burlywood;
+    }
+
+    .average {
+        background-color: cadetblue;
+    }
+
+    .better-average {
+        background-color: lawngreen;
+    }
+
+    .excellent {
+        background-color: forestgreen;
+    }
+
+    .select-subject {
+        background-color: lightcoral;
+    }
+
+</style>
+
+<h2>Subjects</h2>
+<div ng-controller="SubjectsController">
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <table class="table" id="subjectsTable">
+        <tr>
+            <th>
+                Subject
+            </th>
+            <th>
+                Teacher
+            </th>
+            <th>
+                Course
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model)
+        {
+        <tr>
+            <td ng-click="currentSubjectID = '@Html.DisplayFor(modelItem => item.ID)'">
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Teacher.Name)
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.Course.Name)
+            </td>
+
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.ID }) |
+                @Html.ActionLink("Details", "Details", new { id = item.ID }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.ID })
+            </td>
+        </tr>
+        }
+
+    </table>
+
+    <div>
+        <h4>{{currentSubjectName}} - Information</h4>
+        <show-teacher-info subject-id="{{currentSubjectID}}"></show-teacher-info>
+        <div ng-if="students.length > 0">
+            <table>
+                <thead>
+                <th>Student</th>
+                <th>Grade</th>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="student in students">
+                        <td>
+                            {{student.Name}}
+                        </td>
+                        <td ng-class="getGradeColor(student.Grade)" class="text-right">
+                            {{student.Grade}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <label ng-if="students.length == 0"> No students </label>
+    </div>
+</div>
+
+<script>
+    var currentSubject;
+
+    $("#subjectsTable tr").each(function (evt) {
+        $(this).children().first().on('click', function (evt) {
+            console.log('Clicking');            
+            if (currentSubject && $(currentSubject).hasClass('select-subject')) {
+                $(currentSubject).removeClass('select-subject');
+            }
+            $(this).addClass('select-subject');
+            currentSubject = $(this);
+        });
+    })
+
+    setTimeout(function () {
+        $("#subjectsTable tr:nth-child(2) td:first").trigger('click');
+    }, 400);  
+        
+</script>
