@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using MagniFinance.DAL;
 using MagniFinanceExercise.DAL;
 using MagniFinanceExercise.Models;
 
@@ -13,12 +14,12 @@ namespace MagniFinanceExercise.Controllers
 {
     public class EnrollmentController : Controller
     {
-        private CollegeContext db = new CollegeContext();
+        private UnitOfWork unitOfWork = new UnitOfWork();
 
         // GET: Enrollment
         public ActionResult Index()
         {
-            var enrollments = db.Enrollments.Include(e => e.Grade).Include(e => e.Student).Include(e => e.Subject);
+            var enrollments = unitOfWork.EnrollmentRepository.Get(); //.Include(e => e.Grade).Include(e => e.Student).Include(e => e.Subject);
             return View(enrollments.ToList());
         }
 
@@ -29,7 +30,7 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Enrollment enrollment = db.Enrollments.Find(id);
+            Enrollment enrollment = unitOfWork.EnrollmentRepository.GetByID(id);
             if (enrollment == null)
             {
                 return HttpNotFound();
@@ -40,9 +41,9 @@ namespace MagniFinanceExercise.Controllers
         // GET: Enrollment/Create
         public ActionResult Create()
         {
-            ViewBag.GradeValue = new SelectList(db.Grades, "Value", "Value");
-            ViewBag.StudentID = new SelectList(db.Students, "ID", "Name");
-            ViewBag.SubjectID = new SelectList(db.Subjects, "ID", "Name");
+            ViewBag.GradeValue = new SelectList(unitOfWork.GradeRepository.Get(), "Value", "Value");
+            ViewBag.StudentID = new SelectList(unitOfWork.StudentRepository.Get(), "ID", "Name");
+            ViewBag.SubjectID = new SelectList(unitOfWork.SubjectRepository.Get(), "ID", "Name");
             return View();
         }
 
@@ -55,14 +56,14 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Enrollments.Add(enrollment);
-                db.SaveChanges();
+                unitOfWork.EnrollmentRepository.Insert(enrollment);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.GradeValue = new SelectList(db.Grades, "Value", "Value", enrollment.GradeValue);
-            ViewBag.StudentID = new SelectList(db.Students, "ID", "Name", enrollment.StudentID);
-            ViewBag.SubjectID = new SelectList(db.Subjects, "ID", "Name", enrollment.SubjectID);
+            ViewBag.GradeValue = new SelectList(unitOfWork.GradeRepository.Get(), "Value", "Value");
+            ViewBag.StudentID = new SelectList(unitOfWork.StudentRepository.Get(), "ID", "Name");
+            ViewBag.SubjectID = new SelectList(unitOfWork.SubjectRepository.Get(), "ID", "Name");
             return View(enrollment);
         }
 
@@ -73,14 +74,14 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Enrollment enrollment = db.Enrollments.Find(id);
+            Enrollment enrollment = unitOfWork.EnrollmentRepository.GetByID(id);
             if (enrollment == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.GradeValue = new SelectList(db.Grades, "Value", "Value", enrollment.GradeValue);
-            ViewBag.StudentID = new SelectList(db.Students, "ID", "Name", enrollment.StudentID);
-            ViewBag.SubjectID = new SelectList(db.Subjects, "ID", "Name", enrollment.SubjectID);
+            ViewBag.GradeValue = new SelectList(unitOfWork.GradeRepository.Get(), "Value", "Value");
+            ViewBag.StudentID = new SelectList(unitOfWork.StudentRepository.Get(), "ID", "Name");
+            ViewBag.SubjectID = new SelectList(unitOfWork.SubjectRepository.Get(), "ID", "Name");
             return View(enrollment);
         }
 
@@ -93,13 +94,13 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(enrollment).State = EntityState.Modified;
-                db.SaveChanges();
+                unitOfWork.EnrollmentRepository.Update(enrollment);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
-            ViewBag.GradeValue = new SelectList(db.Grades, "Value", "Value", enrollment.GradeValue);
-            ViewBag.StudentID = new SelectList(db.Students, "ID", "Name", enrollment.StudentID);
-            ViewBag.SubjectID = new SelectList(db.Subjects, "ID", "Name", enrollment.SubjectID);
+            ViewBag.GradeValue = new SelectList(unitOfWork.GradeRepository.Get(), "Value", "Value");
+            ViewBag.StudentID = new SelectList(unitOfWork.StudentRepository.Get(), "ID", "Name");
+            ViewBag.SubjectID = new SelectList(unitOfWork.SubjectRepository.Get(), "ID", "Name");
             return View(enrollment);
         }
 
@@ -110,7 +111,9 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Enrollment enrollment = db.Enrollments.Find(id);
+
+            Enrollment enrollment = unitOfWork.EnrollmentRepository.GetByID(id);
+
             if (enrollment == null)
             {
                 return HttpNotFound();
@@ -123,9 +126,9 @@ namespace MagniFinanceExercise.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Enrollment enrollment = db.Enrollments.Find(id);
-            db.Enrollments.Remove(enrollment);
-            db.SaveChanges();
+            Enrollment enrollment = unitOfWork.EnrollmentRepository.GetByID(id);
+            unitOfWork.EnrollmentRepository.Delete(enrollment);
+            unitOfWork.Save();
             return RedirectToAction("Index");
         }
 
@@ -133,7 +136,7 @@ namespace MagniFinanceExercise.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                unitOfWork.Dispose();
             }
             base.Dispose(disposing);
         }

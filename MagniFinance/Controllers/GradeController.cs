@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using MagniFinance.DAL;
 using MagniFinanceExercise.DAL;
 using MagniFinanceExercise.Models;
 
@@ -13,22 +14,25 @@ namespace MagniFinanceExercise.Controllers
 {
     public class GradeController : Controller
     {
-        private CollegeContext db = new CollegeContext();
+        private UnitOfWork unitOfWork = new UnitOfWork();
 
         // GET: Grade
         public ActionResult Index()
         {
-            return View(db.Grades.ToList());
+            var grades = unitOfWork.GradeRepository.Get();
+            return View(grades.ToList());
         }
 
         // GET: Grade/Details/5
-        public ActionResult Details(string id)
+        public ActionResult Details(double id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Grade grade = db.Grades.Find(id);
+
+            Grade grade = unitOfWork.GradeRepository.GetByID(id);
+
             if (grade == null)
             {
                 return HttpNotFound();
@@ -51,8 +55,8 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Grades.Add(grade);
-                db.SaveChanges();
+                unitOfWork.GradeRepository.Insert(grade);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
 
@@ -60,13 +64,15 @@ namespace MagniFinanceExercise.Controllers
         }
 
         // GET: Grade/Edit/5
-        public ActionResult Edit(string id)
+        public ActionResult Edit(double id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Grade grade = db.Grades.Find(id);
+
+            Grade grade = unitOfWork.GradeRepository.GetByID(id);
+
             if (grade == null)
             {
                 return HttpNotFound();
@@ -83,21 +89,23 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(grade).State = EntityState.Modified;
-                db.SaveChanges();
+                unitOfWork.GradeRepository.Update(grade);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(grade);
         }
 
         // GET: Grade/Delete/5
-        public ActionResult Delete(string id)
+        public ActionResult Delete(double id)
         {
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Grade grade = db.Grades.Find(id);
+
+            Grade grade = unitOfWork.GradeRepository.GetByID(id);
+
             if (grade == null)
             {
                 return HttpNotFound();
@@ -110,9 +118,9 @@ namespace MagniFinanceExercise.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(string id)
         {
-            Grade grade = db.Grades.Find(id);
-            db.Grades.Remove(grade);
-            db.SaveChanges();
+            Grade grade = unitOfWork.GradeRepository.GetByID(id);
+            unitOfWork.GradeRepository.Delete(grade);
+            unitOfWork.Save();
             return RedirectToAction("Index");
         }
 
@@ -120,7 +128,7 @@ namespace MagniFinanceExercise.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                unitOfWork.Dispose();
             }
             base.Dispose(disposing);
         }

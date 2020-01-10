@@ -14,13 +14,13 @@ namespace MagniFinanceExercise.Controllers
 {
     public class TeacherController : Controller
     {
-        private CollegeContext db = new CollegeContext();
         private UnitOfWork unitOfWork = new UnitOfWork();
 
         // GET: Teacher
         public ActionResult Index()
         {
-            return View(db.Teachers.ToList());
+            var teachers = unitOfWork.TeacherRepository.Get();
+            return View(teachers.ToList());
         }
 
         public ActionResult FindById(int id)
@@ -36,7 +36,7 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Teacher teacher = db.Teachers.Find(id);
+            Teacher teacher = unitOfWork.TeacherRepository.GetByID(id);
             if (teacher == null)
             {
                 return HttpNotFound();
@@ -59,8 +59,8 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Teachers.Add(teacher);
-                db.SaveChanges();
+                unitOfWork.TeacherRepository.Insert(teacher);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
 
@@ -74,7 +74,7 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Teacher teacher = db.Teachers.Find(id);
+            Teacher teacher = unitOfWork.TeacherRepository.GetByID(id);
             if (teacher == null)
             {
                 return HttpNotFound();
@@ -91,8 +91,8 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(teacher).State = EntityState.Modified;
-                db.SaveChanges();
+                unitOfWork.TeacherRepository.Update(teacher);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(teacher);
@@ -105,7 +105,7 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Teacher teacher = db.Teachers.Find(id);
+            Teacher teacher = unitOfWork.TeacherRepository.GetByID(id);
             if (teacher == null)
             {
                 return HttpNotFound();
@@ -118,9 +118,9 @@ namespace MagniFinanceExercise.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Teacher teacher = db.Teachers.Find(id);
-            db.Teachers.Remove(teacher);
-            db.SaveChanges();
+            Teacher teacher = unitOfWork.TeacherRepository.GetByID(id);
+            unitOfWork.TeacherRepository.Delete(teacher);
+            unitOfWork.Save();
             return RedirectToAction("Index");
         }
 
@@ -128,7 +128,7 @@ namespace MagniFinanceExercise.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                unitOfWork.Dispose();
             }
             base.Dispose(disposing);
         }

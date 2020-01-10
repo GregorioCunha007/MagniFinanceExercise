@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
+using MagniFinance.DAL;
 using MagniFinanceExercise.DAL;
 using MagniFinanceExercise.Models;
 
@@ -13,12 +14,13 @@ namespace MagniFinanceExercise.Controllers
 {
     public class StudentController : Controller
     {
-        private CollegeContext db = new CollegeContext();
+        private UnitOfWork unitOfWork = new UnitOfWork();
 
         // GET: Student
         public ActionResult Index()
         {
-            return View(db.Students.ToList());
+            var students = unitOfWork.StudentRepository.Get();
+            return View(students.ToList());
         }
 
         // GET: Student/Details/5
@@ -28,7 +30,9 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.Students.Find(id);
+
+            Student student = unitOfWork.StudentRepository.GetByID(id);
+
             if (student == null)
             {
                 return HttpNotFound();
@@ -51,8 +55,8 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Students.Add(student);
-                db.SaveChanges();
+                unitOfWork.StudentRepository.Insert(student);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
 
@@ -66,7 +70,7 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.Students.Find(id);
+            Student student = unitOfWork.StudentRepository.GetByID(id);
             if (student == null)
             {
                 return HttpNotFound();
@@ -83,8 +87,8 @@ namespace MagniFinanceExercise.Controllers
         {
             if (ModelState.IsValid)
             {
-                db.Entry(student).State = EntityState.Modified;
-                db.SaveChanges();
+                unitOfWork.StudentRepository.Update(student);
+                unitOfWork.Save();
                 return RedirectToAction("Index");
             }
             return View(student);
@@ -97,7 +101,9 @@ namespace MagniFinanceExercise.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = db.Students.Find(id);
+
+            Student student = unitOfWork.StudentRepository.GetByID(id);
+
             if (student == null)
             {
                 return HttpNotFound();
@@ -110,9 +116,9 @@ namespace MagniFinanceExercise.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            Student student = db.Students.Find(id);
-            db.Students.Remove(student);
-            db.SaveChanges();
+            Student student = unitOfWork.StudentRepository.GetByID(id);
+            unitOfWork.StudentRepository.Delete(student);
+            unitOfWork.Save();
             return RedirectToAction("Index");
         }
 
@@ -120,7 +126,7 @@ namespace MagniFinanceExercise.Controllers
         {
             if (disposing)
             {
-                db.Dispose();
+                unitOfWork.Dispose();
             }
             base.Dispose(disposing);
         }
